@@ -11,8 +11,11 @@ rpm:
 
 	mv noarch/*.rpm .
 
-test:
+rpm-test:
 	rpmlint -i *.rpm *.spec
+
+unit-test:
+	for f in tests/*.py; do python $$f; done
 
 clean:
 	rm -rf noarch/ BUILDROOT/
@@ -24,7 +27,8 @@ help:
 	@echo "Usage: make <target>                                    "
 	@echo "                                                        "
 	@echo " rpm - create rpm package                               "
-	@echo " test - test all packages/spec files with rpmlint       "
+	@echo " rpm-test - test all packages/spec files with rpmlint   "
+	@echo " unit-test - run all unit tests                         "
 	@echo " clean - clean files used to build                      "
 	@echo " distclean - execute clean and remove all output files  "
 	@echo " help - show this help and exit                         "

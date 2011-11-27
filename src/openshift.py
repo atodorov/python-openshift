@@ -63,7 +63,7 @@ class OpenShift:
     }
 
     def __init__(self, rhlogin, password, server='openshift.redhat.com'):
-#	self.delay_time = self.DEFAULT_DELAY
+	self.delay_time = self.DEFAULT_DELAY
 	self.server = server
 	self.rhlogin = rhlogin
 	self.password = password
@@ -85,7 +85,7 @@ class OpenShift:
 	conn.request('POST', path, params)
 	response = conn.getresponse()
 
-	if (response.status == 404) and (response.content_type == 'text/html'):
+	if (response.status == 404) and (response.getheader('Content-type') == 'text/html'):
 	    raise OpenShiftNotFoundException("RHCloud server not found.")
 
 	return response
@@ -156,41 +156,6 @@ class OpenShift:
 	self.delay_time *= adj
 
 
-
-    # Invalid chars (") ($) (^) (<) (>) (|) (%) (/) (;) (:) (,) (\) (*) (=) (~)
-    def check_rhlogin(self, rhlogin):
-#todo: fix regular expression
-	if rhlogin:
-	    if re.match('/["\$\^<>\|%\/;:,\\\*=~]/', rhlogin):
-		print 'RHLogin may not contain any of these characters: (\") ($) (^) (<) (>) (|) (%) (/) (;) (:) (,) (\) (*) (=) (~)'
-		return False
-	else:
-	    print "RHLogin is required"
-	    return False
-
-	return True
-
-    def check_app(self, app):
-	self.check_field(app, 'application', APP_NAME_MAX_LENGTH)
-
-    def check_namespace(self, namespace):
-	self.check_field(namespace, 'namespace', DEFAULT_MAX_LENGTH)
-
-    def check_field(self, field, type, max=0):
-	if field:
-#todo: fix regexp
-	    if re.match("/[^0-9a-zA-Z]/", field):
-		print "%s contains non-alphanumeric characters!" % field
-		return False
-	    if (max != 0) and (field.length > max):
-		print "maximum %s size is %d characters" % (type, max)
-		return False
-	else:
-	    print "%s is required" % field
-	    return False
-
-	return True
-
     def print_post_data(self, h):
 	if self.mydebug:
 	    print 'Submitting form:'
@@ -207,7 +172,6 @@ class OpenShift:
 	    exit_code = self.print_json_body(json_resp)
 	elif self.mydebug:
 	    print "HTTP response from server is %s" % response.read()
-	    end
 	sys.exit(exit_code)
 
     def print_response_messages(self, json_resp):

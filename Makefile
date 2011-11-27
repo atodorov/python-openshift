@@ -14,10 +14,14 @@ rpm:
 rpm-test:
 	rpmlint -i *.rpm *.spec
 
-test:
+sanity-test:
 	pylint -E src/*.py
 	pylint -E tests/*.py
+
+unit-test:
 	for f in tests/*.py; do python $$f; done
+
+test: sanity-test unit-test
 
 clean:
 	rm -rf noarch/ BUILDROOT/
@@ -30,7 +34,9 @@ help:
 	@echo "                                                        "
 	@echo " rpm - create rpm package                               "
 	@echo " rpm-test - test all packages/spec files with rpmlint   "
-	@echo " test - run all sanity and unit tests                   "
+	@echo " sanity-test - run all sanity tests                     "
+	@echo " unit-test - run all unit tests                         "
+	@echo " test - run all available tests                         "
 	@echo " clean - clean files used to build                      "
 	@echo " distclean - execute clean and remove all output files  "
 	@echo " help - show this help and exit                         "

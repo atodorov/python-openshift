@@ -15,8 +15,8 @@ rpm-test:
 	rpmlint -i *.rpm *.spec
 
 test:
-	pylint src/*.py
-	pylint tests/*.py
+	pylint -E src/*.py
+	pylint -E tests/*.py
 	for f in tests/*.py; do python $$f; done
 
 clean:

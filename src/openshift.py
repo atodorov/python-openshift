@@ -93,7 +93,7 @@ class OpenShift:
 
     def get_user_info(self):
 	'''
-	    Return information about the user.
+	    Return information about the user:
 	    http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-User_and_Application_Information.html
 	'''
 	data = {'rhlogin' : self.rhlogin}
@@ -121,7 +121,10 @@ class OpenShift:
 	return user_info
 
     def get_cartridges_list(self, cart_type="standalone"):
-	""" Get a list of available cartridges """
+	"""
+            Get a list of available cartridges:
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Cartridge_List.html
+        """
 
 	data = {'cart_type' : cart_type}
 	data['debug'] = self.mydebug
@@ -140,6 +143,56 @@ class OpenShift:
 
 	    carts = json.loads(json_resp['data'])['carts']
 	    return carts
+
+        def create_domain(self, domain):
+            """
+                Create a domain for the user:
+                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Domain_Creation_Commands.html
+            """
+            raise NotImplementedError
+
+        def create_application(self):
+            """
+                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+            """
+            raise NotImplementedError
+
+
+        def destroy_application(self):
+            """
+                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+            """
+            raise NotImplementedError
+
+
+        def start_application(self):
+            """
+                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+            """
+            raise NotImplementedError
+
+        def stop_application(self):
+            """
+                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+            """
+            raise NotImplementedError
+
+
+        def restart_application(self):
+            """
+                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+            """
+            raise NotImplementedError
+
+        def application_status(self):
+            """
+                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+            """
+            raise NotImplementedError
+
+#todo: force-stop|reload|add-alias|remove-alias
+#todo: embedded add|remove|stop|start|restart|status|reload)-$cartridge eg: add-mysql-5.1
+#todo: untested functions
 
 
     def timeout(self, value):

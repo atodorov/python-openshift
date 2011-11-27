@@ -1,5 +1,8 @@
 # Copyright 2011 Alexander Todorov <atodorov@nospam.otb.bg>
 
+github:
+	git push -u origin master --tags
+
 rpm:
 	rpmbuild --define "_topdir  %(pwd)" \
 	--define "_builddir /tmp" \
@@ -32,6 +35,7 @@ distclean: clean
 help:
 	@echo "Usage: make <target>                                    "
 	@echo "                                                        "
+	@echo " github - push to GitHub                                "
 	@echo " rpm - create rpm package                               "
 	@echo " rpm-test - test all packages/spec files with rpmlint   "
 	@echo " sanity-test - run all sanity tests                     "

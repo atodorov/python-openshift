@@ -14,7 +14,9 @@ rpm:
 rpm-test:
 	rpmlint -i *.rpm *.spec
 
-unit-test:
+test:
+	pylint src/*.py
+	pylint tests/*.py
 	for f in tests/*.py; do python $$f; done
 
 clean:
@@ -28,7 +30,7 @@ help:
 	@echo "                                                        "
 	@echo " rpm - create rpm package                               "
 	@echo " rpm-test - test all packages/spec files with rpmlint   "
-	@echo " unit-test - run all unit tests                         "
+	@echo " test - run all sanity and unit tests                   "
 	@echo " clean - clean files used to build                      "
 	@echo " distclean - execute clean and remove all output files  "
 	@echo " help - show this help and exit                         "

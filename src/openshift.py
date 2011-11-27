@@ -115,7 +115,6 @@ class OpenShift:
 		raise OpenShiftUnknownException
 
 	json_resp = json.loads(response.read())
-	self.update_server_api_v(json_resp)
 	self.print_response_success(json_resp)
 
 	user_info = json.loads(json_resp['data'])
@@ -137,7 +136,6 @@ class OpenShift:
 	    return []
 	else:
 	    json_resp = json.loads(response.read())
-	    self.update_server_api_v(json_resp)
 	    self.print_response_success(json_resp)
 
 	    carts = json.loads(json_resp['data'])['carts']
@@ -153,14 +151,6 @@ class OpenShift:
 
     def debug(self, value):
 	self.mydebug = value
-
-    def update_server_api_v(self, dict):
-#todo: fix regular expressions
-	if dict.has_key('broker') and (dict['broker'] is not None) and re.search("\A\d+\.\d+\.\d+\z", dict['broker']):
-	    self.broker_version = dict['broker']
-
-	if dict.has_key('api') and (dict['api'] is not None) and re.search("\A\d+\.\d+\.\d+\z/", dict['api']):
-	    self.api_version = dict['api']
 
     def delay(self, time, adj=DEFAULT_DELAY):
 	self.delay_time *= adj

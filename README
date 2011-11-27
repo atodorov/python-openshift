@@ -1,0 +1,4 @@
+This is a Python interface to Red Hat's OpenShift cloud platform.
+
+This is based on the OpenShift API docs:
+http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/index.html

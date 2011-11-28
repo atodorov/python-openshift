@@ -151,12 +151,15 @@ class OpenShift:
         """
         raise NotImplementedError
 
-    def _application_ctl(self, action, app_name):
+    def _application_ctl(self, action, app_name, server_alias=None):
         '''
             Control the application.
         '''
         data = {'action' : action, 'app_name' : app_name, 'rhlogin' : self.rhlogin}
         data['debug'] = self.mydebug
+
+        if server_alias:
+            data['server_alias'] = server_alias
 
         json_data = self.generate_json(data)
         response = self.http_post('/broker/cartridge', json_data)
@@ -196,6 +199,13 @@ class OpenShift:
         """
         self._application_ctl(action='stop', app_name=app_name)
 
+    def force_stop_application(self, app_name):
+        """
+            Force stop application
+            TODO: this doesn't seem to be documented by rhc-ctl-app uses the 'force-stop' keyword as parameter.
+            TODO: How is this different from 'stop' ?
+        """
+        self._application_ctl(action='force-stop', app_name=app_name)
 
     def restart_application(self, app_name):
         """
@@ -204,14 +214,41 @@ class OpenShift:
         """
         self._application_ctl(action='restart', app_name=app_name)
 
+    def reload_application(self, app_name):
+        """
+            Reload application
+            TODO: this doesn't seem to be documented by rhc-ctl-app uses the 'reload' keyword as parameter.
+            TODO: How is this different from 'restart' ?
+        """
+        self._application_ctl(action='reload', app_name=app_name)
+
+
     def application_status(self, app_name):
         """
+            Get application status
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
         """
         (response, json_resp) = self._application_ctl(action='status', app_name=app_name)
         return json_resp['result']
 
-#todo: force-stop|reload|add-alias|remove-alias
+    def add_alias(self, app_name, alias):
+        """
+            Add a CNAME alias to the application
+            TODO: this doesn't seem to be documented
+        """
+        (response, json_resp) = self._application_ctl(action='add-alias', app_name=app_name, server_alias=alias)
+        return json_resp['result']
+
+    def remove_alias(self, app_name, alias):
+        """
+            Remove a CNAME alias from the application
+            TODO: this doesn't seem to be documented
+        """
+        (response, json_resp) = self._application_ctl(action='remove-alias', app_name=app_name, server_alias=alias)
+        return json_resp['result']
+
+#todo: return True/False if action was successful ? 
+
 #todo: embedded add|remove|stop|start|restart|status|reload)-$cartridge eg: add-mysql-5.1
 #todo: untested functions
 

@@ -144,51 +144,72 @@ class OpenShift:
 	    carts = json.loads(json_resp['data'])['carts']
 	    return carts
 
-        def create_domain(self, domain):
-            """
-                Create a domain for the user:
-                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Domain_Creation_Commands.html
-            """
-            raise NotImplementedError
+    def create_domain(self, domain):
+        """
+            Create a domain for the user:
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Domain_Creation_Commands.html
+        """
+        raise NotImplementedError
 
-        def create_application(self):
-            """
-                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
-            """
-            raise NotImplementedError
+    def _application_ctl(self, action, app_name):
+        '''
+            Control the application.
+        '''
+        data = {'action' : action, 'app_name' : app_name, 'rhlogin' : self.rhlogin}
+        data['debug'] = self.mydebug
+
+        json_data = self.generate_json(data)
+        response = self.http_post('/broker/cartridge', json_data)
+
+        json_resp = None
+        if response.status == 200:
+            json_resp = json.loads(response.read())
+        else:
+            self.print_response_err(response)
+
+        return (response, json_resp)
+
+    def create_application(self):
+        """
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+        """
+        raise NotImplementedError
+
+    def destroy_application(self, app_name):
+        """
+            Destroy the application and remove all data from OpenShift
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+        """
+        self._application_ctl(action='deconfigure', app_name=app_name)
+
+    def start_application(self, app_name):
+        """
+            Start application
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+        """
+        self._application_ctl(action='start', app_name=app_name)
+
+    def stop_application(self, app_name):
+        """
+            Stop application
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+        """
+        self._application_ctl(action='stop', app_name=app_name)
 
 
-        def destroy_application(self):
-            """
-                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
-            """
-            raise NotImplementedError
+    def restart_application(self, app_name):
+        """
+            Restart application
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+        """
+        self._application_ctl(action='restart', app_name=app_name)
 
-
-        def start_application(self):
-            """
-                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
-            """
-            raise NotImplementedError
-
-        def stop_application(self):
-            """
-                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
-            """
-            raise NotImplementedError
-
-
-        def restart_application(self):
-            """
-                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
-            """
-            raise NotImplementedError
-
-        def application_status(self):
-            """
-                http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
-            """
-            raise NotImplementedError
+    def application_status(self, app_name):
+        """
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
+        """
+        (response, json_resp) = self._application_ctl(action='status', app_name=app_name)
+        return json_resp['result']
 
 #todo: force-stop|reload|add-alias|remove-alias
 #todo: embedded add|remove|stop|start|restart|status|reload)-$cartridge eg: add-mysql-5.1

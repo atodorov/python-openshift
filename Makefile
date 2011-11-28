@@ -18,8 +18,8 @@ rpm-test:
 	rpmlint -i *.rpm *.spec
 
 sanity-test:
-	pylint -E src/*.py
-	pylint -E tests/*.py
+	chmod a+x tests/sanity.sh
+	./tests/sanity.sh
 
 unit-test:
 	for f in tests/*.py; do python $$f; done

@@ -12,17 +12,17 @@ dirname = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(dirname, "..", "src"))
 
 
-from openshift import OpenShift
+from openshift import OpenShiftExpress
 
 class TestApplicationControl(unittest.TestCase):
     '''
-        Test the OpenShift application control methods
+        Test OpenShiftExpress application control methods
     '''
 
     def test_start_app(self):
         self.assertTrue(os.environ.has_key('OPENSHIFT_USER'), 'Provide OpenShift username!')
         self.assertTrue(os.environ.has_key('OPENSHIFT_PASSWORD'), 'Provide OpenShift password!')
-        oshift = OpenShift(rhlogin=os.environ['OPENSHIFT_USER'], password=os.environ['OPENSHIFT_PASSWORD'])
+        oshift = OpenShiftExpress(rhlogin=os.environ['OPENSHIFT_USER'], password=os.environ['OPENSHIFT_PASSWORD'])
 
 #	oshift.start_application(self.app_name)
         self.assertTrue(False) # not implemented. FAIL

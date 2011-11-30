@@ -12,11 +12,11 @@ from openshift import *
 
 class TestUserInfo(unittest.TestCase):
     '''
-        Test the OpenShift.get_user_info() method
+        Test the OpenShiftExpress.get_user_info() method
     '''
 
     def test_missing_user(self):
-        oshift = OpenShift(rhlogin='nosuchlogin', password='123456')
+        oshift = OpenShiftExpress(rhlogin='nosuchlogin', password='123456')
         try:
             info = oshift.get_user_info()
         except OpenShiftLoginFailedException:
@@ -27,7 +27,7 @@ class TestUserInfo(unittest.TestCase):
 
     def test_wrong_password(self):
         self.assertTrue(os.environ.has_key('OPENSHIFT_USER'), 'Provide OpenShift username!')
-        oshift = OpenShift(rhlogin=os.environ['OPENSHIFT_USER'], password='123456')
+        oshift = OpenShiftExpress(rhlogin=os.environ['OPENSHIFT_USER'], password='123456')
         try:
             info = oshift.get_user_info()
         except OpenShiftLoginException:
@@ -39,7 +39,7 @@ class TestUserInfo(unittest.TestCase):
     def test_user_info(self):
         self.assertTrue(os.environ.has_key('OPENSHIFT_USER'), 'Provide OpenShift username!')
         self.assertTrue(os.environ.has_key('OPENSHIFT_PASSWORD'), 'Provide OpenShift password!')
-        oshift = OpenShift(rhlogin=os.environ['OPENSHIFT_USER'], password=os.environ['OPENSHIFT_PASSWORD'])
+        oshift = OpenShiftExpress(rhlogin=os.environ['OPENSHIFT_USER'], password=os.environ['OPENSHIFT_PASSWORD'])
         info = oshift.get_user_info()
         self.assertTrue(info.has_key('user_info'))
         self.assertTrue(info.has_key('app_info'))

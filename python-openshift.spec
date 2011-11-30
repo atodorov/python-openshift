@@ -1,9 +1,10 @@
 # Copyright 2011 Alexander Todorov <atodorov@nospam.otb.bg>
 
+%define pkgname openshift
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Summary:	Python interface to Red Hat's OpenShift cloud platform
-Name:		python-openshift
+Name:		python-%{pkgname}
 Version:	0.1
 Release:	1%{?dist}
 License:	MIT
@@ -43,9 +44,9 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %defattr(-,root,root)
 
-%{python_sitelib}/openshift/
+%{python_sitelib}/%{pkgname}/
 %if 0%{?el6}
-%{python_sitelib}/python_openshift-%{version}-*.egg-info
+%{python_sitelib}/python_%{pkgname}-%{version}-*.egg-info
 %endif
 
 %doc README

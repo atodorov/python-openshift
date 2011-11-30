@@ -24,18 +24,33 @@ based on the OpenShift API docs.
 %build
 %{__python} setup.py build
 
+pydoc -w openshift
+
+
 %install
 rm -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
+
+mkdir -p %{buildroot}/%{_docdir}/%{name}-%{version}
+install -m 0644 README %{buildroot}/%{_docdir}/%{name}-%{version}
+install -m 0644 LICENCE %{buildroot}/%{_docdir}/%{name}-%{version}
+install -m 0644 openshift.html %{buildroot}/%{_docdir}/%{name}-%{version}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
+%defattr(-,root,root)
+
+%{python_sitelib}/openshift/
+%if 0%{?el6}
+%{python_sitelib}/python_openshift-%{version}-*.egg-info
+%endif
+
 %doc README
 %doc LICENCE
-%{python_sitelib}/*
+%doc *.html
 
 %changelog
 

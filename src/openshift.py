@@ -32,7 +32,7 @@ class OpenShiftException(exceptions.BaseException):
 class OpenShiftLoginException(OpenShiftException):
     pass
 
-class OpenShift:
+class OpenShiftExpress:
     """A class that represent the OpenShift Express API"""
 
     API = "1.1.1"
@@ -40,19 +40,18 @@ class OpenShift:
     debug = False
 
     def __init__(self, rhlogin, password, server='openshift.redhat.com'):
-        '''Constructor. Nothing special here'''
         self.server = server
         self.rhlogin = rhlogin
         self.password = password
         self.last_response = None
 
-    def generate_json(self, data):
+    def _generate_json(self, data):
         '''Helper function to encode the json data. DO NOT use directly.'''
         data['api'] = self.API
         data['debug'] = self.debug
         return json.dumps(data)
 
-    def http_post(self, path, json_data, skip_password=False):
+    def _http_post(self, path, json_data, skip_password=False):
         '''
             Helper function to POST the data to the requester path and return the response object.
             DO NOT use directly.
@@ -90,13 +89,16 @@ class OpenShift:
 
     def get_user_info(self):
         '''
-            Return information about the user:
+            Return information about the user
+
+            @return  - dict structure with user and applications info or exception
+
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-User_and_Application_Information.html
         '''
         data = {'rhlogin' : self.rhlogin}
-        json_data = self.generate_json(data)
+        json_data = self._generate_json(data)
 
-        response = self.http_post('/broker/userinfo', json_data)
+        response = self._http_post('/broker/userinfo', json_data)
 
         if response.status != 200:
             if response.status == 404:
@@ -104,7 +106,7 @@ class OpenShift:
             elif response.status == 401:
                 raise OpenShiftLoginException("Invalid user credentials")
             else:
-                raise OpenShiftException(get_response_error())
+                raise OpenShiftException(response_error())
 
         json_resp = json.loads(response.read())
         user_info = json.loads(json_resp['data'])
@@ -112,34 +114,41 @@ class OpenShift:
 
     def get_cartridges_list(self, cart_type="standalone"):
         """
-            Get a list of available cartridges.
-            @cart_type - standalone|embedded
+            Get a list of available cartridges
+
+            @cart_type - 'standalone' or 'embedded'
+            @return - list of cartridge names or exception
+
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Cartridge_List.html
         """
 
         data = {'cart_type' : cart_type}
-        json_data = self.generate_json(data)
+        json_data = self._generate_json(data)
 
-        response = self.http_post('/broker/cartlist', json_data, skip_password=True)
+        response = self._http_post('/broker/cartlist', json_data, skip_password=True)
 
         if response.status != 200:
-            raise OpenShiftException(get_response_error())
+            raise OpenShiftException(response_error())
         else:
             json_resp = json.loads(response.read())
             return json.loads(json_resp['data'])['carts']
 
     def control_application(self, app_name, action, cartridge=None, embedded=False, server_alias=None):
         '''
-            Control the application.
+            Control the application
+
             @app_name - the name of the application
-            @action - what to do. see rhc-ctl-app for a list of allowed actions.
-            @cartridge - if the action is related to a specific framework (like add/remove) specify which one.
+            @action - what to do. see rhc-ctl-app for a list of allowed actions
+            @cartridge - if the action is related to a specific framework (like add/remove) specify which one
             @embedded - is the action related to an embedded cartridge
-            @server_alias - specify if adding/removing a CNAME.
+            @server_alias - specify if adding/removing a CNAME
+
+            @return - the result structure returned by the server or exception
+
+            todo: force-stop and reload are not documented. what is the difference with stop/restart?
 
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Embedded_Cartridges.html
-            todo: force-stop and reload are not documented. what is the difference with stop/restart? 
         '''
 
         allowed_actions = ['configure', 'deconfigure', 'start', 'stop', 'restart', 'reload', 'status']
@@ -157,7 +166,7 @@ class OpenShift:
 
 
         if action not in allowed_actions:
-            raise OpenShiftException("%s not in %s" % (action, '|'.join(allowed_actions.))
+            raise OpenShiftException("%s not in %s" % (action, '|'.join(allowed_actions)))
 
 
         data = {'action' : action, 'app_name' : app_name, 'rhlogin' : self.rhlogin}
@@ -169,25 +178,27 @@ class OpenShift:
         if server_alias:
             data['server_alias'] = server_alias
 
-        json_data = self.generate_json(data)
+        json_data = self._generate_json(data)
 
         if embedded:
-            response = self.http_post('/broker/embed_cartridge', json_data)
+            response = self._http_post('/broker/embed_cartridge', json_data)
         else:
-            response = self.http_post('/broker/cartridge', json_data)
+            response = self._http_post('/broker/cartridge', json_data)
 
         json_resp = None
         if response.status == 200:
             json_resp = json.loads(response.read())
         else:
-            raise OpenShiftException(get_response_error())
+            raise OpenShiftException(response_error())
 
         return json_resp['result']
 
-    def get_response_error(self):
+    def response_error(self):
         '''
-            Call this if a funtion raises or doesn't return the expected results.
+            Call this in case of exception or unexpected results.
             The last response values are stored in self.last_response
+
+            @return - string or exception
         '''
         if self.last_response['content_type'] == 'application/json':
             json_resp = json.loads(self.last_response['body'])

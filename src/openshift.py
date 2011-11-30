@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 import json
+import pprint
 import urllib
 import httplib
 import exceptions
@@ -28,7 +29,7 @@ import exceptions
 class OpenShiftException(exceptions.BaseException):
     pass
 
-class OpenShiftLoginFailedException(OpenShiftException):
+class OpenShiftLoginException(OpenShiftException):
     pass
 
 class OpenShift:
@@ -82,7 +83,6 @@ class OpenShift:
         if self.debug:
             json_resp = json.loads(self.last_response['body'])
             print "Response from server:"
-            import pprint
             pprint.pprint(json_resp)
 
         return response
@@ -102,7 +102,7 @@ class OpenShift:
             if response.status == 404:
                 raise OpenShiftException("The user with login '%s' does not have a registered domain." % self.rhlogin)
             elif response.status == 401:
-                raise OpenShiftLoginFailedException("Invalid user credentials")
+                raise OpenShiftLoginException("Invalid user credentials")
             else:
                 raise OpenShiftException(get_response_error())
 
@@ -126,12 +126,17 @@ class OpenShift:
             raise OpenShiftException(get_response_error())
         else:
             json_resp = json.loads(response.read())
-            carts = json.loads(json_resp['data'])['carts']
-            return carts
+            return json.loads(json_resp['data'])['carts']
 
     def control_application(self, app_name, action, cartridge=None, embedded=False, server_alias=None):
         '''
             Control the application.
+            @app_name - the name of the application
+            @action - what to do. see rhc-ctl-app for a list of allowed actions.
+            @cartridge - if the action is related to a specific framework (like add/remove) specify which one.
+            @embedded - is the action related to an embedded cartridge
+            @server_alias - specify if adding/removing a CNAME.
+
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Embedded_Cartridges.html
             todo: force-stop and reload are not documented. what is the difference with stop/restart? 

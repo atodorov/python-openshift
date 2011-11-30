@@ -30,7 +30,7 @@ class TestUserInfo(unittest.TestCase):
         oshift = OpenShift(rhlogin=os.environ['OPENSHIFT_USER'], password='123456')
         try:
             info = oshift.get_user_info()
-        except OpenShiftLoginFailedException:
+        except OpenShiftLoginException:
             self.assertTrue(True)
             return
 

@@ -28,22 +28,7 @@ import exceptions
 class OpenShiftException(exceptions.BaseException):
     pass
 
-class OpenShiftUnknownException(OpenShiftException):
-    pass
-
-class OpenShiftNotFoundException(OpenShiftException):
-    pass
-
-class OpenShiftMissingDomainException(OpenShiftException):
-    pass
-
 class OpenShiftLoginFailedException(OpenShiftException):
-    pass
-
-class OpenShiftWrongParametersException(OpenShiftException):
-    pass
-
-class OpenShiftListCartridgesException(OpenShiftException):
     pass
 
 class OpenShift:
@@ -91,7 +76,7 @@ class OpenShift:
         self.last_response['body'] = response.read()
 
         if (response.status == 404) and (response.getheader('Content-type') == 'text/html'):
-            raise OpenShiftNotFoundException("RHCloud server not found.")
+            raise OpenShiftException("RHCloud server not found.")
 
         # request probably successed. print the reponse
         if self.debug:
@@ -115,11 +100,11 @@ class OpenShift:
 
         if response.status != 200:
             if response.status == 404:
-                raise OpenShiftMissingDomainException("The user with login '%s' does not have a registered domain." % self.rhlogin)
+                raise OpenShiftException("The user with login '%s' does not have a registered domain." % self.rhlogin)
             elif response.status == 401:
                 raise OpenShiftLoginFailedException("Invalid user credentials")
             else:
-                raise OpenShiftUnknownException
+                raise OpenShiftException(get_response_error())
 
         json_resp = json.loads(response.read())
         user_info = json.loads(json_resp['data'])
@@ -138,18 +123,11 @@ class OpenShift:
         response = self.http_post('/broker/cartlist', json_data, skip_password=True)
 
         if response.status != 200:
-            raise OpenShiftException
+            raise OpenShiftException(get_response_error())
         else:
             json_resp = json.loads(response.read())
             carts = json.loads(json_resp['data'])['carts']
             return carts
-
-    def create_domain(self, domain):
-        """
-            Create a domain for the user:
-            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Domain_Creation_Commands.html
-        """
-        raise NotImplementedError
 
     def control_application(self, app_name, action, cartridge=None, embedded=False, server_alias=None):
         '''
@@ -174,7 +152,7 @@ class OpenShift:
 
 
         if action not in allowed_actions:
-            raise OpenShiftWrongParametersException("%s not in %s" % (action, '|'.join(allowed_actions.))
+            raise OpenShiftException("%s not in %s" % (action, '|'.join(allowed_actions.))
 
 
         data = {'action' : action, 'app_name' : app_name, 'rhlogin' : self.rhlogin}
@@ -197,11 +175,11 @@ class OpenShift:
         if response.status == 200:
             json_resp = json.loads(response.read())
         else:
-            raise OpenShiftException
+            raise OpenShiftException(get_response_error())
 
         return json_resp['result']
 
-    def get_response_error(self, response):
+    def get_response_error(self):
         '''
             Call this if a funtion raises or doesn't return the expected results.
             The last response values are stored in self.last_response
@@ -210,5 +188,4 @@ class OpenShift:
             json_resp = json.loads(self.last_response['body'])
             return json_resp['messages']
         else:
-            # server did not return a response. Need to run in debug mode
-            raise OpenShiftException
+            raise OpenShiftException('Response type was not application/json. Please run in debug mode!')

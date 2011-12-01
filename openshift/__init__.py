@@ -45,10 +45,14 @@ class OpenShiftExpress:
         self.password = password
         self.last_response = None
 
-    def _generate_json(self, data):
+    def _generate_json(self, data, skip_login=False):
         '''Helper function to encode the json data. DO NOT use directly.'''
         data['api'] = self.API
         data['debug'] = self.debug
+
+        if not skip_login:
+            data['rhlogin'] = self.rhlogin
+
         return json.dumps(data)
 
     def _http_post(self, path, json_data, skip_password=False):
@@ -95,8 +99,7 @@ class OpenShiftExpress:
 
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-User_and_Application_Information.html
         '''
-        data = {'rhlogin' : self.rhlogin}
-        json_data = self._generate_json(data)
+        json_data = self._generate_json({})
 
         response = self._http_post('/broker/userinfo', json_data)
 
@@ -106,7 +109,7 @@ class OpenShiftExpress:
             elif response.status == 401:
                 raise OpenShiftLoginException("Invalid user credentials")
             else:
-                raise OpenShiftException(response_error())
+                raise OpenShiftException(self.response_error())
 
         json_resp = json.loads(response.read())
         user_info = json.loads(json_resp['data'])
@@ -123,12 +126,12 @@ class OpenShiftExpress:
         """
 
         data = {'cart_type' : cart_type}
-        json_data = self._generate_json(data)
+        json_data = self._generate_json(data, skip_login=True)
 
         response = self._http_post('/broker/cartlist', json_data, skip_password=True)
 
         if response.status != 200:
-            raise OpenShiftException(response_error())
+            raise OpenShiftException(self.response_error())
         else:
             json_resp = json.loads(response.read())
             return json.loads(json_resp['data'])['carts']
@@ -169,7 +172,7 @@ class OpenShiftExpress:
             raise OpenShiftException("%s not in %s" % (action, '|'.join(allowed_actions)))
 
 
-        data = {'action' : action, 'app_name' : app_name, 'rhlogin' : self.rhlogin}
+        data = {'action' : action, 'app_name' : app_name}
 
         if cartridge:
             data['cartridge'] = cartridge
@@ -189,9 +192,33 @@ class OpenShiftExpress:
         if response.status == 200:
             json_resp = json.loads(response.read())
         else:
-            raise OpenShiftException(response_error())
+            raise OpenShiftException(self.response_error())
 
         return json_resp['result']
+
+    def create_domain(self, namespace, ssh_key=None, alter=False):
+        '''
+            Create new domain in the cloud
+
+            @namespace - string - the name of the domain
+            @ssh_key - string - the key portion of an rsa key excluding ssh-rsa and comment
+            @alter - bool - an optional flag to alter namespace and/or ssh key after creation
+
+            @return - dict - the data structure returned from the server or exception
+
+            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Domain_Creation_Commands.html
+        '''
+        data = {'namespace' : namespace, 'ssh' : ssh_key, 'alter' : alter}
+        json_data = self._generate_json(data)
+
+        response = self._http_post('/broker/domain', json_data)
+
+        if response.status != 200:
+            raise OpenShiftException(self.response_error())
+        else:
+            json_resp = json.loads(response.read())
+            return json.loads(json_resp['data'])
+
 
     def response_error(self):
         '''

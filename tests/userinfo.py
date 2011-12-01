@@ -7,6 +7,7 @@
 
 import os
 import sys
+import pprint
 import unittest
 
 dirname = os.path.dirname(os.path.realpath(__file__))
@@ -24,8 +25,9 @@ class TestUserInfo(unittest.TestCase):
         oshift = OpenShiftExpress(rhlogin='nosuchlogin', password='123456')
         try:
             info = oshift.get_user_info()
-        except OpenShiftLoginFailedException:
+        except OpenShiftLoginException as e:
             self.assertTrue(True)
+            print e
             return
 
         self.assertTrue(False)
@@ -35,8 +37,9 @@ class TestUserInfo(unittest.TestCase):
         oshift = OpenShiftExpress(rhlogin=os.environ['OPENSHIFT_USER'], password='123456')
         try:
             info = oshift.get_user_info()
-        except OpenShiftLoginException:
+        except OpenShiftLoginException as e:
             self.assertTrue(True)
+            print e
             return
 
         self.assertTrue(False)
@@ -46,6 +49,8 @@ class TestUserInfo(unittest.TestCase):
         self.assertTrue(os.environ.has_key('OPENSHIFT_PASSWORD'), 'Provide OpenShift password!')
         oshift = OpenShiftExpress(rhlogin=os.environ['OPENSHIFT_USER'], password=os.environ['OPENSHIFT_PASSWORD'])
         info = oshift.get_user_info()
+        pprint.pprint(info)
+
         self.assertTrue(info.has_key('user_info'))
         self.assertTrue(info.has_key('app_info'))
 

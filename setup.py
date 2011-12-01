@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name='python-openshift',
+setup(name='openshift',
       version='0.1',
       description="Python interface to Red Hat's OpenShift cloud platform",
       author='Alexander Todorov',

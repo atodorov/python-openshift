@@ -1,9 +1,14 @@
 # Copyright 2011 Alexander Todorov <atodorov@nospam.otb.bg>
 
+version := $(shell python setup.py --version)
+
 github:
 	git push -u origin master --tags
 
-rpm:
+tar:
+	tar -czvf openshift-$(version).tar.gz README LICENSE setup.py openshift/
+
+rpm: tar
 	rpmbuild --define "_topdir  %(pwd)" \
 	--define "_builddir /tmp" \
 	--define "_rpmdir %{_topdir}" \
@@ -13,6 +18,8 @@ rpm:
 	-ba python-openshift.spec
 
 	mv noarch/*.rpm .
+
+release: tar rpm
 
 rpm-test:
 	rpmlint -i *.rpm *.spec
@@ -28,15 +35,19 @@ test: sanity-test unit-test
 
 clean:
 	rm -rf noarch/ BUILDROOT/
+	rm -f openshift/*.pyc
+	rm -f tests/*.pyc
 
 distclean: clean
-	rm -f *.rpm
+	rm -f *.rpm *.tar.gz
 
 help:
 	@echo "Usage: make <target>                                    "
 	@echo "                                                        "
 	@echo " github - push to GitHub                                "
+	@echo " tar - make a tarball                                   "
 	@echo " rpm - create rpm package                               "
+	@echo " release - build all release files                      "
 	@echo " rpm-test - test all packages/spec files with rpmlint   "
 	@echo " sanity-test - run all sanity tests                     "
 	@echo " unit-test - run all unit tests                         "

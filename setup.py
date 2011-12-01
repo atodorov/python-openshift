@@ -1,4 +1,5 @@
-#   Copyright (c) 2011, Alexander Todorov <atodorov()otb.bg>
+# Copyright (c) 2011, Open Technologies Bulgaria, Ltd. <http://otb.bg>
+# Author: Alexander Todorov <atodorov@nospam.otb.bg>
 
 from distutils.core import setup
 

@@ -1,4 +1,5 @@
-# Copyright 2011 Alexander Todorov <atodorov@nospam.otb.bg>
+# Copyright (c) 2011, Open Technologies Bulgaria, Ltd. <http://otb.bg>
+# Author: Alexander Todorov <atodorov@nospam.otb.bg>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files

@@ -1,4 +1,5 @@
-# Copyright 2011 Alexander Todorov <atodorov@nospam.otb.bg>
+# Copyright (c) 2011, Open Technologies Bulgaria, Ltd. <http://otb.bg>
+# Author: Alexander Todorov <atodorov@nospam.otb.bg>
 
 %define pkgname %(%{__python} setup.py --name)
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
@@ -10,7 +11,7 @@ Release:	1%{?dist}
 License:	%(%{__python} setup.py --license)
 Group:		Development/Languages
 URL:		%(%{__python} setup.py --url)
-Source:		%{url}/%{pkgname}-%{version}.tar.gz
+Source:		https://github.com/downloads/atodorov/%{name}/%{pkgname}-%{version}.tar.gz
 BuildRequires:	python-devel, python-setuptools
 BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)

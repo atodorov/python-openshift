@@ -37,14 +37,14 @@ class OpenShiftExpress:
     """Represent the OpenShift Express API."""
 
     API = "1.1.1"
-    connection_timeout = 10
+    connection_timeout = 20
     debug = False
 
     def __init__(self, rhlogin, password, server='openshift.redhat.com'):
         self.server = server
         self.rhlogin = rhlogin
         self.password = password
-        self.last_response = None
+        self.last_response = {}
 
     def _generate_json(self, data, skip_login=False):
         """Helper function to encode the json data. DO NOT use directly."""
@@ -71,25 +71,26 @@ class OpenShiftExpress:
             print 'Submitting params:'
             print params
 
-        conn = httplib.HTTPSConnection(self.server, timeout=self.connection_mytimeout)
+        conn = httplib.HTTPSConnection(self.server, timeout=self.connection_timeout)
         conn.request('POST', path, params)
         response = conn.getresponse()
 
         # store the last server response for error reporting
         self.last_response['status'] = response.status
-        self.last_response['content_type'] = response.content_type
         self.last_response['body'] = response.read()
+        self.last_response['content_type'] = response.getheader('Content-type')
 
-        if (response.status == 404) and (response.getheader('Content-type') == 'text/html'):
+        if (response.status == 404) and response.getheader('Content-type').startswith('text/html'):
             raise OpenShiftException("RHCloud server not found.")
 
         # request probably successed. print the reponse
         if self.debug:
             json_resp = json.loads(self.last_response['body'])
             print "Response from server:"
+            pprint.pprint(response.getheaders())
             pprint.pprint(json_resp)
 
-        return response
+        return (self.last_response['status'], self.last_response['body'])
 
 
     def get_user_info(self):
@@ -102,17 +103,17 @@ class OpenShiftExpress:
         """
         json_data = self._generate_json({})
 
-        response = self._http_post('/broker/userinfo', json_data)
+        (status, body) = self._http_post('/broker/userinfo', json_data)
 
-        if response.status != 200:
-            if response.status == 404:
+        if status != 200:
+            if status == 404:
                 raise OpenShiftException("The user with login '%s' does not have a registered domain." % self.rhlogin)
-            elif response.status == 401:
+            elif status == 401:
                 raise OpenShiftLoginException("Invalid user credentials")
             else:
                 raise OpenShiftException(self.response_error())
 
-        json_resp = json.loads(response.read())
+        json_resp = json.loads(body)
         user_info = json.loads(json_resp['data'])
         return user_info
 
@@ -130,12 +131,12 @@ class OpenShiftExpress:
         data = {'cart_type' : cart_type}
         json_data = self._generate_json(data, skip_login=True)
 
-        response = self._http_post('/broker/cartlist', json_data, skip_password=True)
+        (status, body) = self._http_post('/broker/cartlist', json_data, skip_password=True)
 
-        if response.status != 200:
+        if status != 200:
             raise OpenShiftException(self.response_error())
         else:
-            json_resp = json.loads(response.read())
+            json_resp = json.loads(body)
             return json.loads(json_resp['data'])['carts']
 
     def control_application(self, app_name, action, cartridge=None, embedded=False, server_alias=None):
@@ -186,13 +187,13 @@ class OpenShiftExpress:
         json_data = self._generate_json(data)
 
         if embedded:
-            response = self._http_post('/broker/embed_cartridge', json_data)
+            (status, body) = self._http_post('/broker/embed_cartridge', json_data)
         else:
-            response = self._http_post('/broker/cartridge', json_data)
+            (status, body) = self._http_post('/broker/cartridge', json_data)
 
         json_resp = None
-        if response.status == 200:
-            json_resp = json.loads(response.read())
+        if status == 200:
+            json_resp = json.loads(body)
         else:
             raise OpenShiftException(self.response_error())
 
@@ -219,12 +220,12 @@ class OpenShiftExpress:
 
         json_data = self._generate_json(data)
 
-        response = self._http_post('/broker/domain', json_data)
+        (status, body) = self._http_post('/broker/domain', json_data)
 
-        if response.status != 200:
+        if status != 200:
             raise OpenShiftException(self.response_error())
         else:
-            json_resp = json.loads(response.read())
+            json_resp = json.loads(body)
             return json.loads(json_resp['data'])
 
 
@@ -235,8 +236,10 @@ class OpenShiftExpress:
 
             @return - string or exception
         """
-        if self.last_response['content_type'] == 'application/json':
+        if self.last_response['content_type'].startswith('application/json'):
             json_resp = json.loads(self.last_response['body'])
-            return json_resp['messages']
+            message = "%s %s" % (json_resp['result'], json_resp['messages'])
+            message.strip()
+            return message
         else:
             raise OpenShiftException('Response type was not application/json. Please run in debug mode!')

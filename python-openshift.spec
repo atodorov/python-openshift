@@ -3,14 +3,14 @@
 %define pkgname openshift
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-Summary:	Python interface to Red Hat's OpenShift cloud platform
-Name:		python-%{pkgname}
-Version:	0.1
+Summary:	%(%{__python} setup.py --description)
+Name:		%(%{__python} setup.py --name)
+Version:	%(%{__python} setup.py --version)
 Release:	1%{?dist}
-License:	MIT
+License:	%(%{__python} setup.py --license)
 Group:		Development/Languages
-URL:		https://github.com/atodorov/python-openshift
-Source:		%{pkgname}-%{version}.tar.gz
+URL:		%(%{__python} setup.py --url)
+Source:		%{url}-%{pkgname}-%{version}.tar.gz
 BuildRequires:	python-devel, python-setuptools
 BuildArch:	noarch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)

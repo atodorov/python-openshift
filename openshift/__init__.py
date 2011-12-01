@@ -33,7 +33,7 @@ class OpenShiftLoginException(OpenShiftException):
     pass
 
 class OpenShiftExpress:
-    """A class that represent the OpenShift Express API"""
+    """Represent the OpenShift Express API."""
 
     API = "1.1.1"
     connection_timeout = 10
@@ -46,7 +46,7 @@ class OpenShiftExpress:
         self.last_response = None
 
     def _generate_json(self, data, skip_login=False):
-        '''Helper function to encode the json data. DO NOT use directly.'''
+        """Helper function to encode the json data. DO NOT use directly."""
         data['api'] = self.API
         data['debug'] = self.debug
 
@@ -56,10 +56,10 @@ class OpenShiftExpress:
         return json.dumps(data)
 
     def _http_post(self, path, json_data, skip_password=False):
-        '''
+        """
             Helper function to POST the data to the requester path and return the response object.
             DO NOT use directly.
-        '''
+        """
         if skip_password:
             params = urllib.urlencode({'json_data' : json_data})
         else:
@@ -92,13 +92,13 @@ class OpenShiftExpress:
 
 
     def get_user_info(self):
-        '''
-            Return information about the user
+        """
+            Get information about the user and currently deployed applications.
 
             @return  - dict structure with user and applications info or exception
 
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-User_and_Application_Information.html
-        '''
+        """
         json_data = self._generate_json({})
 
         response = self._http_post('/broker/userinfo', json_data)
@@ -117,9 +117,10 @@ class OpenShiftExpress:
 
     def get_cartridges_list(self, cart_type="standalone"):
         """
-            Get a list of available cartridges
+            Get a list of available cartridges.
 
             @cart_type - 'standalone' or 'embedded'
+
             @return - list of cartridge names or exception
 
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Cartridge_List.html
@@ -137,14 +138,14 @@ class OpenShiftExpress:
             return json.loads(json_resp['data'])['carts']
 
     def control_application(self, app_name, action, cartridge=None, embedded=False, server_alias=None):
-        '''
-            Control the application
+        """
+            Control the application, create, destroy, start, stop, add embedded cartridge, etc.
 
-            @app_name - the name of the application
-            @action - what to do. see rhc-ctl-app for a list of allowed actions
-            @cartridge - if the action is related to a specific framework (like add/remove) specify which one
-            @embedded - is the action related to an embedded cartridge
-            @server_alias - specify if adding/removing a CNAME
+            @app_name - string - the name of the application
+            @action - string - what to do. see rhc-ctl-app for a list of allowed actions
+            @cartridge - string - if the action is related to a specific framework (like add/remove) specify which one
+            @embedded - bool - is the action related to an embedded cartridge
+            @server_alias - string - specify if adding/removing a CNAME
 
             @return - the result structure returned by the server or exception
 
@@ -152,7 +153,7 @@ class OpenShiftExpress:
 
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Application_Control_Commands.html
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Embedded_Cartridges.html
-        '''
+        """
 
         allowed_actions = ['configure', 'deconfigure', 'start', 'stop', 'restart', 'reload', 'status']
         if not embedded:
@@ -197,8 +198,8 @@ class OpenShiftExpress:
         return json_resp['result']
 
     def create_domain(self, namespace, ssh_key=None, alter=False):
-        '''
-            Create new domain in the cloud
+        """
+            Create new domain (aka namespace) in the cloud.
 
             @namespace - string - the name of the domain
             @ssh_key - string - the key portion of an rsa key excluding ssh-rsa and comment
@@ -207,8 +208,14 @@ class OpenShiftExpress:
             @return - dict - the data structure returned from the server or exception
 
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Domain_Creation_Commands.html
-        '''
-        data = {'namespace' : namespace, 'ssh' : ssh_key, 'alter' : alter}
+        """
+        if (not alter) and (ssh_key is None):
+            raise OpenShiftException("Specify SSH key when creating a domain")
+
+        data = {'namespace' : namespace, 'alter' : alter}
+        if ssh_key is not None:
+            data['ssh'] = ssh_key
+
         json_data = self._generate_json(data)
 
         response = self._http_post('/broker/domain', json_data)
@@ -221,12 +228,12 @@ class OpenShiftExpress:
 
 
     def response_error(self):
-        '''
+        """
             Call this in case of exception or unexpected results.
             The last response values are stored in self.last_response
 
             @return - string or exception
-        '''
+        """
         if self.last_response['content_type'] == 'application/json':
             json_resp = json.loads(self.last_response['body'])
             return json_resp['messages']

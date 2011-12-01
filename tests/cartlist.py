@@ -13,7 +13,7 @@ dirname = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(dirname, ".."))
 
 
-from openshift import OpenShiftExpress
+from openshift import OpenShiftExpress, OpenShiftException
 
 class TestCartList(unittest.TestCase):
     '''
@@ -25,6 +25,23 @@ class TestCartList(unittest.TestCase):
         oshift = OpenShiftExpress(rhlogin=None, password=None)
         carts = oshift.get_cartridges_list()
         self.assertTrue(len(carts) > 0)
+        print carts
+
+    def test_get_cart_list_embedded(self):
+        '''If the list is not empty then PASS'''
+        oshift = OpenShiftExpress(rhlogin=None, password=None)
+        carts = oshift.get_cartridges_list('embedded')
+        self.assertTrue(len(carts) > 0)
+        print carts
+
+    def test_get_cart_list_unknown(self):
+        '''If the list is not empty then PASS'''
+        oshift = OpenShiftExpress(rhlogin=None, password=None)
+        try:
+            carts = oshift.get_cartridges_list('unknown')
+        except OpenShiftException as e:
+            self.assertTrue(True)
+            print e
 
 
 if __name__ == '__main__':

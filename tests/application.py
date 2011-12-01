@@ -121,7 +121,7 @@ class TestApplicationControl(unittest.TestCase):
             print e
 
         print "Adding embedded ..."
-        embed_type='phpmyadmin-3.4'
+        embed_type='mysql-5.1'
         oshift.control_application(app_name=self.app_name, action='add', cartridge=embed_type, embedded=True)
         info = oshift.get_user_info()
         pprint.pprint(info)

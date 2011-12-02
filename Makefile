@@ -22,7 +22,7 @@ rpm: tar
 
 release: tar rpm
 
-rpm-test: rpm
+rpm-test:
 	rpmlint -i *.rpm *.spec
 
 sanity-test:

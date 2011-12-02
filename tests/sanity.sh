@@ -6,19 +6,19 @@
 BASE_DIR=`readlink -f $0`
 BASE_DIR=`dirname $BASE_DIR`
 
-echo "Searching for typos causing plain http connections"
+echo "TEST: Searching for typos causing plain http connections"
 err=`grep -c HTTPConnection $BASE_DIR/../openshift/*.py`
 [ $err != 0 ] && exit $err
 
 
 export PYTHONPATH="$BASE_DIR/../openshift/"
 
-echo "Running pylint for sources"
+echo "TEST: Running pylint for sources"
 pylint -E $BASE_DIR/../openshift/*.py
 res=$?
 [ $res != 0 ] && exit $res
 
-echo "Running pylint for tests"
+echo "TEST: Running pylint for tests"
 pylint -E $BASE_DIR/../tests/*.py
 res=$?
 [ $res != 0 ] && exit $res

@@ -22,7 +22,7 @@ rpm: tar
 
 release: tar rpm
 
-rpm-test:
+rpm-test: rpm
 	rpmlint -i *.rpm *.spec
 
 sanity-test:
@@ -32,7 +32,9 @@ sanity-test:
 unit-test:
 	for f in tests/*.py; do python $$f; done
 
-test: sanity-test unit-test
+test: sanity-test unit-test rpm-test
+
+all: release test
 
 clean:
 	rm -rf noarch/ BUILDROOT/
@@ -45,6 +47,7 @@ distclean: clean
 help:
 	@echo "Usage: make <target>                                    "
 	@echo "                                                        "
+	@echo " all - build all files and run all tests                "
 	@echo " github - push to GitHub                                "
 	@echo " tar - make a tarball                                   "
 	@echo " rpm - create rpm package                               "

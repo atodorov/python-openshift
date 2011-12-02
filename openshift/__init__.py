@@ -157,6 +157,12 @@ class OpenShiftExpress:
             http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-Embedded_Cartridges.html
         """
 
+        if embedded and (cartridge is None):
+            raise OpenShiftException('Specify cartridge type when executing embedded operations')
+
+        if action in ['create', 'configure'] and (cartridge is None):
+            raise OpenShiftException('Specify cartridge type when creating an application')
+
         allowed_actions = ['configure', 'deconfigure', 'start', 'stop', 'restart', 'reload', 'status']
         if not embedded:
             allowed_actions += ['force-stop', 'add-alias', 'remove-alias']

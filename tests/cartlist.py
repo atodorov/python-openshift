@@ -22,6 +22,7 @@ class TestCartList(unittest.TestCase):
 
     def test_get_cart_list(self):
         '''If the list is not empty then PASS'''
+        print "TEST: Getting list of standalone cartridges ..."
         oshift = OpenShiftExpress(rhlogin=None, password=None)
         carts = oshift.get_cartridges_list()
         self.assertTrue(len(carts) > 0)
@@ -29,6 +30,7 @@ class TestCartList(unittest.TestCase):
 
     def test_get_cart_list_embedded(self):
         '''If the list is not empty then PASS'''
+        print "TEST: Getting list of embedded cartridges ..."
         oshift = OpenShiftExpress(rhlogin=None, password=None)
         carts = oshift.get_cartridges_list('embedded')
         self.assertTrue(len(carts) > 0)
@@ -36,6 +38,7 @@ class TestCartList(unittest.TestCase):
 
     def test_get_cart_list_unknown(self):
         '''If the list is not empty then PASS'''
+        print "TEST: Getting list of unknown cartridges ..."
         oshift = OpenShiftExpress(rhlogin=None, password=None)
         try:
             carts = oshift.get_cartridges_list('unknown')

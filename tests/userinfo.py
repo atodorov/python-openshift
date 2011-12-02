@@ -22,6 +22,7 @@ class TestUserInfo(unittest.TestCase):
     '''
 
     def test_missing_user(self):
+        print "TEST: Getting info for missing user ..."
         oshift = OpenShiftExpress(rhlogin='nosuchlogin', password='123456')
         try:
             info = oshift.get_user_info()
@@ -33,6 +34,7 @@ class TestUserInfo(unittest.TestCase):
         self.assertTrue(False)
 
     def test_wrong_password(self):
+        print "TEST: Getting info with wrong password ..."
         self.assertTrue(os.environ.has_key('OPENSHIFT_USER'), 'Provide OpenShift username!')
         oshift = OpenShiftExpress(rhlogin=os.environ['OPENSHIFT_USER'], password='123456')
         try:
@@ -45,6 +47,7 @@ class TestUserInfo(unittest.TestCase):
         self.assertTrue(False)
 
     def test_user_info(self):
+        print "TEST: Getting info for user ..."
         self.assertTrue(os.environ.has_key('OPENSHIFT_USER'), 'Provide OpenShift username!')
         self.assertTrue(os.environ.has_key('OPENSHIFT_PASSWORD'), 'Provide OpenShift password!')
         oshift = OpenShiftExpress(rhlogin=os.environ['OPENSHIFT_USER'], password=os.environ['OPENSHIFT_PASSWORD'])

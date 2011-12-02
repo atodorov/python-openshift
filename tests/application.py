@@ -130,28 +130,28 @@ class TestApplicationControl(unittest.TestCase):
 
         # stop the embedded cartridge
         print "Stopping embedded..."
-        oshift.control_application(app_name=self.app_name, action='stop', embedded=True)
+        oshift.control_application(app_name=self.app_name, action='stop', cartridge=embed_type, embedded=True)
         status = oshift.control_application(app_name=self.app_name, action='status', embedded=True)
         print(status)
         self.assertTrue(status.find('stopped') > -1)
 
         # start the embedded cartridge
         print "Starting embedded ..."
-        oshift.control_application(app_name=self.app_name, action='start', embedded=True)
+        oshift.control_application(app_name=self.app_name, action='start', cartridge=embed_type, embedded=True)
         status = oshift.control_application(app_name=self.app_name, action='status', embedded=True)
         print status
         self.assertTrue(status.startswith('Total Accesses'))
 
         # restart the embedded cartridge
         print "Restarting embedded ..."
-        oshift.control_application(app_name=self.app_name, action='restart', embedded=True)
+        oshift.control_application(app_name=self.app_name, action='restart', cartridge=embed_type, embedded=True)
         status = oshift.control_application(app_name=self.app_name, action='status', embedded=True)
         print status
         self.assertTrue(status.startswith('Total Accesses'))
 
         # reload the embedded cartridge
         print "Reloading embedded ..."
-        oshift.control_application(app_name=self.app_name, action='reload', embedded=True)
+        oshift.control_application(app_name=self.app_name, action='reload', cartridge=embed_type, embedded=True)
         status = oshift.control_application(app_name=self.app_name, action='status', embedded=True)
         print status
         self.assertTrue(status.startswith('Total Accesses'))

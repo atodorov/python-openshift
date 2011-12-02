@@ -33,12 +33,14 @@ class TestApplicationControl(unittest.TestCase):
 
         # test what happens with dummy actions
         try:
+            print "TEST: Testing dummy actions ..."
             oshift.control_application(app_name='dummy', action='dummy')
         except OpenShiftException as e:
             print e
 
         # test what happens with dummy actions for embedded cartridge
         try:
+            print "TEST: Testing dummy actions ..."
             oshift.control_application(app_name='dummy', action='dummy', embedded=True)
         except OpenShiftException as e:
             print e
@@ -46,13 +48,14 @@ class TestApplicationControl(unittest.TestCase):
         # test create application but no cartridge
         result = None
         try:
+            print "TEST: Create without cartridge type ..."
             result = oshift.control_application(app_name=self.app_name, action='create')
         except OpenShiftException as e:
             print e
             self.assertTrue(result is None)
 
         # create test application
-        print "Creating ..."
+        print "TEST: Creating ..."
         result = oshift.control_application(app_name=self.app_name, action='create', cartridge='wsgi-3.2')
         print result
         self.assertTrue(result.startswith('Successfully created application'))
@@ -62,28 +65,28 @@ class TestApplicationControl(unittest.TestCase):
 
 
         # stop the application
-        print "Stopping ..."
+        print "TEST: Stopping ..."
         oshift.control_application(app_name=self.app_name, action='stop')
         status = oshift.control_application(app_name=self.app_name, action='status')
         print(status)
         self.assertTrue(status.find('stopped') > -1)
 
         # start the application
-        print "Starting ..."
+        print "TEST: Starting ..."
         oshift.control_application(app_name=self.app_name, action='start')
         status = oshift.control_application(app_name=self.app_name, action='status')
         print status
         self.assertTrue(status.startswith('Total Accesses'))
 
         # restart the application
-        print "Restarting ..."
+        print "TEST: Restarting ..."
         oshift.control_application(app_name=self.app_name, action='restart')
         status = oshift.control_application(app_name=self.app_name, action='status')
         print status
         self.assertTrue(status.startswith('Total Accesses'))
 
         # force-stop the application
-        print "Force-stopping ..."
+        print "TEST: Force-stopping ..."
         oshift.control_application(app_name=self.app_name, action='force-stop')
         status = oshift.control_application(app_name=self.app_name, action='status')
         print(status)
@@ -91,14 +94,14 @@ class TestApplicationControl(unittest.TestCase):
 
         # reload the application
 # todo: after reload status gives: Application 'python0penshift7est' is either stopped or inaccessible
-#        print "Reloading ..."
+#        print "TEST: Reloading ..."
 #        oshift.control_application(app_name=self.app_name, action='reload')
 #        status = oshift.control_application(app_name=self.app_name, action='status')
 #        print status
 #        self.assertTrue(status.startswith('Total Accesses'))
 
         # add CNAME
-        print "Adding CNAME alias ..."
+        print "TEST: Adding CNAME alias ..."
         alias = '%s.example.com' % self.app_name
         oshift.control_application(app_name=self.app_name, action='add-alias', server_alias=alias)
         info = oshift.get_user_info()
@@ -106,7 +109,7 @@ class TestApplicationControl(unittest.TestCase):
         self.assertTrue(alias in info['app_info'][self.app_name]['aliases'])
 
         # remove CNAME
-        print "Removing CNAME alias ..."
+        print "TEST: Removing CNAME alias ..."
         alias = '%s.example.com' % self.app_name
         oshift.control_application(app_name=self.app_name, action='remove-alias', server_alias=alias)
         info = oshift.get_user_info()
@@ -116,11 +119,12 @@ class TestApplicationControl(unittest.TestCase):
 
         # add embedded cartridge for this app
         try:
+            print "TEST: Add embedded with no cartridge specified ..."
             oshift.control_application(app_name=self.app_name, action='add', embedded=True)
         except OpenShiftException as e:
             print e
 
-        print "Adding embedded ..."
+        print "TEST: Adding embedded ..."
         embed_type='mysql-5.1'
         oshift.control_application(app_name=self.app_name, action='add', cartridge=embed_type, embedded=True)
         info = oshift.get_user_info()
@@ -129,21 +133,21 @@ class TestApplicationControl(unittest.TestCase):
 
 
         # stop the embedded cartridge
-        print "Stopping embedded..."
+        print "TEST: Stopping embedded..."
         oshift.control_application(app_name=self.app_name, action='stop', cartridge=embed_type, embedded=True)
         status = oshift.control_application(app_name=self.app_name, action='status', cartridge=embed_type, embedded=True)
         print(status)
         self.assertTrue(status.find('stopped') > -1)
 
         # start the embedded cartridge
-        print "Starting embedded ..."
+        print "TEST: Starting embedded ..."
         oshift.control_application(app_name=self.app_name, action='start', cartridge=embed_type, embedded=True)
         status = oshift.control_application(app_name=self.app_name, action='status', cartridge=embed_type, embedded=True)
         print status
         self.assertTrue(status.find('running') > -1)
 
         # restart the embedded cartridge
-        print "Restarting embedded ..."
+        print "TEST: Restarting embedded ..."
         oshift.control_application(app_name=self.app_name, action='restart', cartridge=embed_type, embedded=True)
         status = oshift.control_application(app_name=self.app_name, action='status', cartridge=embed_type, embedded=True)
         print status
@@ -151,21 +155,21 @@ class TestApplicationControl(unittest.TestCase):
 
         # reload the embedded cartridge
 #todo: after reload we get RESULT: Mysql is stopped
-#        print "Reloading embedded ..."
+#        print "TEST: Reloading embedded ..."
 #        oshift.control_application(app_name=self.app_name, action='reload', cartridge=embed_type, embedded=True)
 #        status = oshift.control_application(app_name=self.app_name, action='status', cartridge=embed_type, embedded=True)
 #        print status
 #        self.assertTrue(status.startswith('Total Accesses'))
 
-        print "Removing embedded ..."
-        oshift.control_application(app_name=self.app_name, action='add', cartridge=embed_type, embedded=True)
+        print "TEST: Removing embedded ..."
+        oshift.control_application(app_name=self.app_name, action='remove', cartridge=embed_type, embedded=True)
         info = oshift.get_user_info()
         pprint.pprint(info)
         embedded = info['app_info'][self.app_name]['embedded']
         self.assertTrue((embedded is None) or (len(embedded) == 0))
 
         # destroy the test application
-        print "Destroying ..."
+        print "TEST: Destroying ..."
         result = oshift.control_application(app_name=self.app_name, action='destroy')
         print result
         self.assertTrue(result.startswith('Successfully destroyed application'))

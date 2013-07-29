@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 # Copyright (c) 2011, Open Technologies Bulgaria, Ltd. <http://otb.bg>
 # Author: Alexander Todorov <atodorov@nospam.otb.bg>
 #
@@ -23,75 +25,86 @@
 
 import json
 import pprint
-import urllib
-import httplib
-import exceptions
 
-class OpenShiftException(exceptions.BaseException):
+import requests
+
+class OpenShiftException(BaseException):
     pass
 
 class OpenShiftLoginException(OpenShiftException):
     pass
 
-class OpenShiftExpress:
-    """Represent the OpenShift Express API."""
+class OpenShiftExpress(object):
+    """Represents the OpenShift Express API."""
 
-    API = "1.1.1"
+    apiver = '1.5'
     connection_timeout = 20
     debug = False
 
-    def __init__(self, rhlogin, password, server='openshift.redhat.com'):
-        self.server = server
+    def __init__(self, rhlogin, password, server='openshift.redhat.com', debug=False):
         self.rhlogin = rhlogin
         self.password = password
-        self.last_response = {}
+        self.server = server
+        self.debug=debug
 
-    def _generate_json(self, data, skip_login=False):
-        """Helper function to encode the json data. DO NOT use directly."""
-        data['api'] = self.API
-        data['debug'] = self.debug
+        self.rest_path = 'https://' + server + '/broker/rest/'
+        self.last_response = None
+        self._check_api_version()
 
-        if not skip_login:
-            data['rhlogin'] = self.rhlogin
+    def _check_api_version(self):
+        """Does a simple get request to api to see if API of this library is supported
+        in the OpenShift instance."""
+        self._do_request('api')
 
-        return json.dumps(data)
+    def _print_debug_request(self, request):
+        print('{method} request to "{path}", user "{user}":'.format(method=request.method,
+                                                                    path=request.url,
+                                                                    user=self.rhlogin))
+        print('Headers: ')
+        pprint.pprint(request.headers)
+        print('Params:')
+        pprint.pprint(request.params)
+        print()
 
-    def _http_post(self, path, json_data, skip_password=False):
+    def _print_debug_response(self, response):
+        print("Response:")
+        pprint.pprint(response.headers)
+        pprint.pprint(response.json())
+        print()
+
+    def _do_request(self, path, headers={}, params={}, method='GET', skip_auth=False):
         """
             Helper function to POST the data to the requester path and return the response object.
             DO NOT use directly.
         """
-        if skip_password:
-            params = urllib.urlencode({'json_data' : json_data})
-        else:
-            params = urllib.urlencode({'json_data' : json_data, 'password' : self.password})
+        headers['Accept'] = 'application/json; version={apiver}'.format(apiver=self.apiver)
+        auth = () if skip_auth else (self.rhlogin, self.password)
+        path = self.rest_path + path
 
-        # print all params before sending over https
+        sess = requests.Session()
+        request = requests.Request(method,
+                                   path,
+                                   headers=headers,
+                                   params=params,
+                                   auth=auth)
+
         if self.debug:
-            print 'Submitting params:'
-            print params
+            self._print_debug_request(request)
 
-        conn = httplib.HTTPSConnection(self.server, timeout=self.connection_timeout)
-        conn.request('POST', path, params)
-        response = conn.getresponse()
+        response = sess.send(request.prepare(), timeout=self.connection_timeout)
 
-        # store the last server response for error reporting
-        self.last_response['status'] = response.status
-        self.last_response['body'] = response.read()
-        self.last_response['content_type'] = response.getheader('Content-type')
+        if response.status_code == 406:
+            raise(OpenShiftException('API doesn\'t support version {ourver}, but versions {theirvers}.'.\
+                    format(ourver=self.apiver,
+                           theirvers=response.json()['supported_api_versions'])))
 
-        if (response.status == 404) and response.getheader('Content-type').startswith('text/html'):
-            raise OpenShiftException("RHCloud server not found.")
+        # store the last server response for better error reporting
+        self.last_response = response
 
-        # request probably successed. print the reponse
         if self.debug:
-            json_resp = json.loads(self.last_response['body'])
-            print "Response from server:"
-            pprint.pprint(response.getheaders())
-            pprint.pprint(json_resp)
+            self._print_debug_response(response)
 
-        return (self.last_response['status'], self.last_response['body'])
-
+        return response
 
     def get_user_info(self):
         """

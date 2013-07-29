@@ -18,4 +18,4 @@ class OSEObject(object):
                 format(cls=type(self)))
 
     def __getattr__(self, attr):
-        return self._response.json()['data'][attr]
+        return self._json['data'][attr]

@@ -28,6 +28,8 @@ import pprint
 
 import requests
 
+from .user import User
+
 class OpenShiftException(BaseException):
     pass
 
@@ -49,7 +51,7 @@ class OpenShiftExpress(object):
 
         self.rest_path = 'https://' + server + '/broker/rest/'
         self.last_response = None
-        self._check_api_version()
+        #self._check_api_version()
 
     def _check_api_version(self):
         """Does a simple get request to api to see if API of this library is supported
@@ -106,29 +108,12 @@ class OpenShiftExpress(object):
 
         return response
 
-    def get_user_info(self):
+    def get_user(self):
+        """Get information about the user.
+
+        @return  - openshift.user.User object representing user
         """
-            Get information about the user and currently deployed applications.
-
-            @return  - dict structure with user and applications info or exception
-
-            http://docs.redhat.com/docs/en-US/OpenShift_Express/1.0/html/API_Guide/sect-API_Guide-API_Commands-User_and_Application_Information.html
-        """
-        json_data = self._generate_json({})
-
-        (status, body) = self._http_post('/broker/userinfo', json_data)
-
-        if status != 200:
-            if status == 404:
-                raise OpenShiftException("The user with login '%s' does not have a registered domain." % self.rhlogin)
-            elif status == 401:
-                raise OpenShiftLoginException("Invalid user credentials")
-            else:
-                raise OpenShiftException(self.response_error())
-
-        json_resp = json.loads(body)
-        user_info = json.loads(json_resp['data'])
-        return user_info
+        return User(ose=self)
 
     def get_cartridges_list(self, cart_type="standalone"):
         """
